@@ -1,0 +1,451 @@
+<div class="flex min-h-screen">
+<!-- SIDEBAR (Solo PC) -->
+<aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 hidden md:flex flex-col sticky top-0 h-screen">
+<div class="p-6 border-b border-slate-100">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-xl">🩺</div>
+<div>
+<h1 class="font-bold text-slate-800 leading-tight">Cuidados</h1>
+<p class="text-xs text-slate-500">Paliativos · Seguimiento</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin">
+<button data-view="agenda" class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all">
+<span class="text-lg">📅</span> Agenda Semanal
+</button>
+<button data-view="pacientes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all">
+<span class="text-lg">👥</span> Fichas de Pacientes
+</button>
+<button data-view="visitas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all">
+<span class="text-lg">📝</span> Registro de Visitas
+</button>
+<button data-view="planilla" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all">
+<span class="text-lg">📊</span> Planilla de visitas
+</button>
+</nav>
+<div class="p-4 border-t border-slate-100 space-y-2 flex-shrink-0">
+<button id="btn-sync-now" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-50 rounded-lg transition">
+<span id="sync-icon">🔄</span> <span id="sync-label">Sincronizar ahora</span>
+</button>
+<p class="sync-status text-center" id="sync-status">Última sync: nunca</p>
+<button id="btn-import-csv" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg transition"><span>📊</span> Importar CSV</button>
+<button id="btn-config" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition"><span>⚙️</span> Configuración</button>
+<button id="btn-export" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition"><span>💾</span> Exportar JSON</button>
+<button id="btn-import" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition"><span>📥</span> Importar JSON</button>
+<button id="btn-reset" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition"><span>🗑️</span> Reiniciar demo</button>
+</div>
+</aside>
+<!-- MAIN -->
+<main class="flex-1 flex flex-col min-w-0">
+<header class="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white">🩺</div>
+<span class="font-semibold text-sm">Cuidados Paliativos</span>
+</div>
+<div class="flex gap-2">
+<button id="btn-sync-now-mobile" class="text-xs text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50">🔄 Sync</button>
+<button id="btn-config-mobile" class="text-xs text-slate-600 font-medium px-2 py-1 rounded hover:bg-slate-50">⚙️ Config</button>
+</div>
+</header>
+<!-- Barra de navegación móvil -->
+<nav class="md:hidden bg-white border-b border-slate-200 px-2 py-2 flex gap-1 overflow-x-auto">
+<button data-view="agenda" class="nav-btn active flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium">📅 Agenda</button>
+<button data-view="pacientes" class="nav-btn flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-slate-600">👥 Pacientes</button>
+<button data-view="visitas" class="nav-btn flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-slate-600">📝 Visitas</button>
+<button data-view="planilla" class="nav-btn flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-slate-600">📊 Planilla</button>
+<button id="btn-import-csv-mobile" class="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-emerald-700">📊 CSV</button>
+</nav>
+<div class="flex-1 overflow-auto">
+<!-- ============ AGENDA ============ -->
+<section id="view-agenda" class="view active p-4 md:p-8 fade-in">
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<button id="btn-prev-week" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600">←</button>
+<button id="btn-today" class="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-semibold border border-brand-200">Hoy</button>
+<button id="btn-next-week" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600">→</button>
+</div>
+<div class="text-center">
+<h2 class="text-lg font-bold text-slate-800" id="agenda-week-label">Semana actual</h2>
+<p class="text-xs text-slate-500" id="agenda-week-sublabel"></p>
+</div>
+<button id="btn-toggle-vista" class="hidden lg:flex px-3 py-2 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 items-center gap-1.5">
+<span id="btn-toggle-vista-icon">🗂️</span> <span id="btn-toggle-vista-label">Comprimir todo</span>
+</button>
+<button id="btn-add-visit" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm flex items-center gap-2">
+<span>➕</span> Nueva visita
+</button>
+</div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+<div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+<div>
+<h3 class="text-sm font-bold text-slate-800">Origen del recorrido</h3>
+<p class="text-xs text-slate-500">Google Maps arma la ruta desde acá. A la mañana suele ser tu casa; a la tarde, el trabajo.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="block">
+<span class="block text-xs font-semibold text-amber-700 mb-1">Mañana</span>
+<input id="origen-manana" type="text" autocomplete="street-address" placeholder="Ej: mi casa, Av. San Juan 1234" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+</label>
+<label class="block">
+<span class="block text-xs font-semibold text-indigo-700 mb-1">Tarde</span>
+<input id="origen-tarde" type="text" autocomplete="street-address" placeholder="Ej: trabajo, Villa Soldati" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+</label>
+</div>
+<p id="origen-status" class="text-[11px] text-slate-500 mt-2">Si dejás un origen vacío, esa ruta empieza en el primer paciente.</p>
+</div>
+
+<!-- VISTA DESKTOP -->
+<div class="hidden lg:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="grid grid-cols-7 bg-slate-50 border-b border-slate-200" id="agenda-header"></div>
+<div class="grid grid-cols-7 divide-x divide-slate-200" id="agenda-grid"></div>
+</div>
+<!-- VISTA MÓVIL -->
+<div class="lg:hidden space-y-3">
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2">
+<div class="grid grid-cols-7 gap-1" id="mobile-day-tabs"></div>
+</div>
+<div id="mobile-day-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4"></div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+<div class="bg-white p-4 rounded-xl border border-slate-200"><p class="text-xs text-slate-500">Visitas esta semana</p><p class="text-2xl font-bold text-slate-800 mt-1" id="stat-week">0</p></div>
+<div class="bg-white p-4 rounded-xl border border-slate-200"><p class="text-xs text-slate-500">Horas estimadas</p><p class="text-2xl font-bold text-brand-600 mt-1" id="stat-hours">0h</p></div>
+<div class="bg-white p-4 rounded-xl border border-slate-200"><p class="text-xs text-slate-500">Pacientes activos</p><p class="text-2xl font-bold text-brand-600 mt-1" id="stat-active">0</p></div>
+<div class="bg-white p-4 rounded-xl border border-slate-200"><p class="text-xs text-slate-500">Con opioides</p><p class="text-2xl font-bold text-amber-600 mt-1" id="stat-opioides">0</p></div>
+</div>
+<!-- PANEL DE PACIENTES PENDIENTES -->
+<div id="pending-panel" class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+</section>
+<!-- ============ PACIENTES ============ -->
+<section id="view-pacientes" class="view p-4 md:p-8 fade-in">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+<div>
+<h2 class="text-2xl font-bold text-slate-800">Fichas de Pacientes</h2>
+<p class="text-sm text-slate-500">Gestión integral de NyA en seguimiento</p>
+</div>
+<button id="btn-add-patient" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm flex items-center gap-2">
+<span>➕</span> Nuevo Paciente
+</button>
+</div>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+<div class="flex flex-wrap gap-3 items-center">
+<div class="flex-1 min-w-[200px] relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+<input id="search-pacientes" type="text" placeholder="Buscar por nombre, DNI, obra social..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+</div>
+<select id="filter-estado" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option value="">Todos los estados</option>
+<option value="Activo">Activo</option>
+<option value="Intermitente">Intermitente</option>
+<option value="Fuera de seguimiento">Fuera de seguimiento</option>
+</select>
+<!-- NUEVOS FILTROS -->
+<select id="filter-empresa" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option value="">Todas las empresas</option>
+</select>
+<select id="filter-os" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option value="">Todas las Obras Sociales</option>
+</select>
+<div class="flex rounded-xl border border-slate-200 overflow-hidden">
+<button id="view-cards" class="view-toggle-btn active px-3 py-2 text-xs font-medium transition" title="Vista tarjetas">🗂️ Tarjetas</button>
+<button id="view-list" class="view-toggle-btn px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition" title="Vista lista">📋 Lista</button>
+</div>
+</div>
+</div>
+<div id="pacientes-container"></div>
+</section>
+<!-- ============ VISITAS ============ -->
+<section id="view-visitas" class="view p-4 md:p-8 fade-in">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+<div>
+<h2 class="text-2xl font-bold text-slate-800">Registro de Visitas</h2>
+<p class="text-sm text-slate-500">Pendientes y notas post visita · más recientes primero</p>
+</div>
+<input id="search-visitas" type="text" placeholder="Buscar en evoluciones..." class="px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+</div>
+<div id="visitas-list" class="space-y-3"></div>
+</section>
+<!-- ============ PLANILLA DE VISITAS ============ -->
+<section id="view-planilla" class="view p-4 md:p-8 fade-in">
+<div class="flex items-center justify-between gap-3 mb-6">
+<button id="btn-prev-month" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600">←</button>
+<div class="text-center">
+<h2 class="text-lg font-bold text-slate-800" id="planilla-mes-label">Mes actual</h2>
+<p class="text-xs text-slate-500">Visitas evolucionadas y firmadas</p>
+</div>
+<button id="btn-next-month" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600">→</button>
+</div>
+<div id="planilla-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2"></div>
+<p class="text-xs text-slate-400 mb-6">💡 El valor por visita se guarda solo, no hace falta cargarlo cada mes.</p>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+<div class="flex flex-wrap gap-3 items-center">
+<select id="planilla-filter-empresa" class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option value="">Todas las empresas</option>
+</select>
+<label class="flex items-center gap-2 text-sm text-slate-600 px-2">
+<input id="planilla-solo-pendientes" type="checkbox" class="w-4 h-4 accent-brand-600"> Solo pendientes
+</label>
+</div>
+</div>
+<div id="planilla-table-wrap" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+</section>
+</div>
+</main>
+</div>
+
+<!-- MODAL PACIENTE -->
+<div id="modal-paciente" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 id="modal-paciente-title" class="text-lg font-bold text-slate-800">Nuevo Paciente</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<form id="form-paciente" class="flex-1 overflow-auto p-5 space-y-4 scrollbar-thin">
+<input type="hidden" id="pac-id">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="md:col-span-2"><label class="block text-xs font-semibold text-slate-600 mb-1">Nombre del NyA *</label><input id="pac-nombre" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">DNI</label><input id="pac-dni" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de nacimiento</label><input id="pac-nac" type="date" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Dirección</label><input id="pac-direccion" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Piso / Depto</label><input id="pac-piso" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Empresa / Prepaga</label><input id="pac-empresa" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Obra Social</label><input id="pac-os" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500" placeholder="OSDE, CEMIC, Swiss Medical..."></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Nº Afiliado</label><input id="pac-afiliado" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Contacto</label><input id="pac-contacto" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Estado</label><select id="pac-estado" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"><option>Activo</option><option>Intermitente</option><option>Fuera de seguimiento</option></select></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Usa opioides</label><select id="pac-opioides" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"><option value="No">No</option><option value="Sí">Sí</option></select></div>
+</div>
+<div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+<button type="button" class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div id="modal-detalle" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">Ficha del Paciente</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<div id="detalle-content" class="flex-1 overflow-auto p-5 scrollbar-thin"></div>
+</div>
+</div>
+
+<!-- MODAL AGENDA -->
+<div id="modal-agenda" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-hidden flex flex-col">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 id="modal-agenda-title" class="text-lg font-bold text-slate-800">Nueva visita</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<form id="form-agenda" class="flex-1 overflow-auto p-5 space-y-4 scrollbar-thin">
+<input type="hidden" id="ag-id">
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Paciente *</label><select id="ag-paciente" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></select></div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-xs font-semibold text-slate-600 mb-1">Día *</label>
+<select id="ag-dia" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option>Lunes</option><option>Martes</option><option>Miércoles</option>
+<option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+<input id="ag-fecha" type="date" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+</div>
+</div>
+<div id="ag-fecha-preview" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700">
+📅 Se agendará para: <strong id="ag-fecha-preview-text">-</strong>
+</div>
+<div class="bg-brand-50 border border-brand-200 rounded-xl p-3">
+<div class="flex items-center justify-between mb-2">
+<p class="text-xs font-semibold text-brand-800">🕐 Hora de inicio</p>
+<p class="text-[10px] text-brand-700" id="ag-hora-preview">Libre: 09:45</p>
+</div>
+<input id="ag-hora" type="time" value="09:00" required class="w-full px-3 py-2 rounded-lg border border-brand-200 text-sm focus:outline-none focus:border-brand-500">
+<p class="text-[10px] text-brand-700 mt-2">⏱️ Visita 30' + traslado 15' = 45' bloqueados</p>
+</div>
+<label class="flex items-start gap-2 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+<input id="ag-recurrente" type="checkbox" class="mt-0.5 w-4 h-4 accent-brand-600">
+<div><p class="text-sm font-medium text-slate-700">🔁 Recurrente</p><p class="text-[11px] text-slate-500" id="ag-recurrente-hint">Se repite cada semana (todos los <span id="ag-recurrente-dia">lunes</span>)</p></div>
+</label>
+<div id="ag-intervalo-wrap" class="hidden">
+<label class="block text-xs font-semibold text-slate-600 mb-1">Se repite cada</label>
+<select id="ag-intervalo" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option value="1">Semana (todas las semanas)</option>
+<option value="2">2 semanas</option>
+<option value="3">3 semanas</option>
+<option value="4">4 semanas (aprox. mensual)</option>
+</select>
+</div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Notas (ej: llevar recetas)</label><textarea id="ag-notas" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></textarea></div>
+<div id="ag-saltos-section" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3">
+<p class="text-xs font-semibold text-amber-800 mb-2">⏭️ Semanas saltadas</p>
+<div id="ag-saltos-list" class="space-y-1 mb-2"></div>
+<div class="flex gap-2"><input id="ag-salto-fecha" type="date" class="flex-1 px-2 py-1.5 rounded-lg border border-amber-200 text-sm"><button type="button" id="btn-add-salto" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-lg font-medium">+ Saltar</button></div>
+</div>
+<div class="flex justify-between gap-2 pt-2">
+<button type="button" id="btn-delete-agenda" class="hidden px-3 py-2 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50">Eliminar</button>
+<div class="flex gap-2 ml-auto">
+<button type="button" class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL EVOLUCIÓN -->
+<div id="modal-evolucion" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">Pendientes</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<form id="form-evolucion" class="flex-1 overflow-auto p-5 space-y-4 scrollbar-thin">
+<input type="hidden" id="ev-id"><input type="hidden" id="ev-agendaId"><input type="hidden" id="ev-pacienteId">
+<div id="ev-paciente-info" class="bg-brand-50 border border-brand-200 rounded-xl p-4"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de visita *</label><input id="ev-fecha" type="date" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Pendiente / nota (opcional)</label><textarea id="ev-notas" rows="5" placeholder="Ej: mandar receta de ibuprofeno" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500"></textarea><p class="text-[11px] text-slate-400 mt-1" id="ev-notas-hint"></p></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"><input id="ev-sistema" type="checkbox" class="mt-1 w-4 h-4 accent-brand-600"><div><p class="text-sm font-medium text-slate-700">✓ Evolucioné en el sistema</p><p class="text-xs text-slate-500">Cargada en HC digital</p></div></label>
+<label id="ev-firma-wrap" class="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"><input id="ev-firma" type="checkbox" class="mt-1 w-4 h-4 accent-brand-600"><div><p class="text-sm font-medium text-slate-700">✓ Firmó planilla control OS</p><p class="text-xs text-slate-500">Planilla de la obra social</p></div></label>
+</div>
+<div id="ev-firma-oculto-msg" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
+ℹ️ <strong>OSDE / CEMIC</strong>: esta obra social no requiere planilla de firmas.
+</div>
+<div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+<button type="button" class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL MOVER VISITA -->
+<div id="modal-mover" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">↪️ Mover visita</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<form id="form-mover" class="p-5 space-y-4">
+<input type="hidden" id="mover-id">
+<p class="text-xs text-slate-500" id="mover-info"></p>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Nuevo día</label>
+<select id="mover-dia" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+<option>Lunes</option><option>Martes</option><option>Miércoles</option>
+<option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option>
+</select>
+</div>
+<div><label class="block text-xs font-semibold text-slate-600 mb-1">Nueva hora</label>
+<input id="mover-hora" type="time" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-brand-500">
+</div>
+<p class="text-[11px] text-slate-400">Solo mueve esta semana. La visita recurrente sigue apareciendo normalmente la semana que viene.</p>
+<div class="flex justify-end gap-2 pt-2">
+<button type="button" class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Mover</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- MODAL CONFIG -->
+<div id="modal-config" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">Configuración</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<div class="p-5 space-y-4">
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+<p class="text-xs font-bold text-blue-800 uppercase tracking-wide">Conexión con Google Sheets</p>
+<div><label class="block text-xs font-medium text-blue-800 mb-1">URL del Apps Script</label><input id="cfg-api-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 rounded-lg border border-blue-200 text-sm"></div>
+<div><label class="block text-xs font-medium text-blue-800 mb-1">Token secreto</label><input id="cfg-api-token" type="text" placeholder="UUID de la hoja Config" class="w-full px-3 py-2 rounded-lg border border-blue-200 text-sm font-mono"></div>
+<p class="text-[11px] text-blue-700">Si dejás esto vacío, la app funciona solo con localStorage.</p>
+</div>
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+<p class="text-xs font-bold text-amber-800 uppercase tracking-wide">Origen del recorrido</p>
+<p class="text-[11px] text-amber-800">Los mismos datos que en la agenda. La ruta de la mañana sale del primero y la de la tarde del segundo.</p>
+<div><label class="block text-xs font-medium text-amber-900 mb-1">Mañana (casa)</label><input id="cfg-origen-manana" type="text" autocomplete="street-address" placeholder="Ej: mi casa, Av. San Juan 1234" class="w-full px-3 py-2 rounded-lg border border-amber-200 text-sm"></div>
+<div><label class="block text-xs font-medium text-amber-900 mb-1">Tarde (trabajo)</label><input id="cfg-origen-tarde" type="text" autocomplete="street-address" placeholder="Ej: trabajo, Villa Soldati" class="w-full px-3 py-2 rounded-lg border border-amber-200 text-sm"></div>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+<p class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Constantes de la agenda</p>
+<p class="text-xs text-slate-600">⏱️ Duración de visita: <strong>30 minutos</strong></p>
+<p class="text-xs text-slate-600">🚗 Tiempo de traslado: <strong>15 minutos</strong></p>
+<p class="text-xs text-slate-600">📦 Bloque total por paciente: <strong>45 minutos</strong></p>
+</div>
+<div class="flex justify-end gap-2">
+<button class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button id="btn-save-config" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Guardar</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MODAL IMPORT CSV -->
+<div id="modal-csv" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<div><h3 class="text-lg font-bold text-slate-800">Importar pacientes desde CSV</h3><p class="text-xs text-slate-500 mt-0.5">Exportá tu Google Sheet como CSV (Archivo → Descargar → CSV)</p></div>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<div class="flex-1 overflow-auto p-5 space-y-4 scrollbar-thin">
+<div id="csv-step1">
+<div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-brand-400 transition cursor-pointer" id="csv-dropzone">
+<p class="text-4xl mb-2">📊</p>
+<p class="text-sm font-medium text-slate-700">Arrastrá el CSV acá o hacé clic</p>
+<input id="csv-file" type="file" accept=".csv,text/csv,text/plain" class="hidden">
+</div>
+<div class="mt-4">
+<label class="block text-xs font-semibold text-slate-600 mb-1">O pegá el contenido</label>
+<textarea id="csv-paste" rows="4" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-mono"></textarea>
+<div class="flex items-center gap-4 mt-3 text-xs flex-wrap">
+<label class="flex items-center gap-2"><input type="radio" name="csv-sep" value="auto" checked> Auto</label>
+<label class="flex items-center gap-2"><input type="radio" name="csv-sep" value=","> Coma</label>
+<label class="flex items-center gap-2"><input type="radio" name="csv-sep" value=";"> Punto y coma</label>
+<label class="flex items-center gap-2"><input type="checkbox" id="csv-has-header" checked> 1ra fila = encabezados</label>
+</div>
+<button id="csv-preview-btn" class="mt-4 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">Vista previa →</button>
+</div>
+</div>
+<div id="csv-step2" class="hidden">
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 mb-3"><strong>⚠️ Revisá el mapeo.</strong> El DNI se usa para actualizar pacientes existentes.</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4" id="csv-mapping"></div>
+<div><p class="text-xs font-semibold text-slate-600 mb-2">Vista previa</p><div class="overflow-auto max-h-64 border border-slate-200 rounded-lg"><table class="preview-table w-full" id="csv-preview-table"></table></div></div>
+<div class="flex justify-between items-center pt-4 border-t border-slate-100">
+<p class="text-xs text-slate-500" id="csv-stats"></p>
+<div class="flex gap-2"><button id="csv-back-btn" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">← Atrás</button><button id="csv-import-btn" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Importar</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- MODAL IMPORT JSON -->
+<div id="modal-import" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-800">Importar JSON</h3>
+<button class="modal-close text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+</div>
+<div class="p-5 space-y-4">
+<p class="text-sm text-slate-600">Seleccioná un archivo JSON previamente exportado.</p>
+<input id="import-file" type="file" accept="application/json" class="w-full text-sm">
+<div class="flex justify-end gap-2">
+<button class="modal-close px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+<button id="btn-do-import" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Importar</button>
+</div>
+</div>
+</div>
+</div>
+
+<div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
